@@ -1,4 +1,4 @@
-# Park Your Pooch
+# Audition Me - An AWS Lambda Project
 
 Built by Carter J. Cobb
 
