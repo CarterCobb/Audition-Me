@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>70</x>
+      <y>230</y>
+      <w>270</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>_User_
+--
++ id: String
++ name: String
++ email: String
++ phone: string
++ security_groups: Array&lt;String&gt; 
++ performances: Array&lt;String&gt;
++ participating_in: Array&lt;String&gt;
+
+bg=white
+layer=2
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>750</x>
+      <y>230</y>
+      <w>210</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>_Permission_
+--
++ id: String
++ descriptor: String
++ metadata: Object
+bg=white
+layer=2
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>420</x>
+      <y>230</y>
+      <w>270</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>_SecurityGroup_
+--
++ id: String
++ descriptor: String
++ permissions: Array&lt;String&gt;
+--
++ getPermissionMetadata(): Object
+bg=white
+layer=2
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>330</x>
+      <y>220</y>
+      <w>110</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>90.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>680</x>
+      <y>220</y>
+      <w>90</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>70.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>2160</x>
+      <y>10</y>
+      <w>140</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>EmptyPackage
+--
+bg=orange</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>420</x>
+      <y>90</y>
+      <w>270</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>SecurityGroup defines the User's role.
+It will contain permissions for that role.
+Permissions hold metadata that defines
+allowed actions. These will always be 
+boolean values.`permissions` is a list of
+permission ids.
+bg=blue
+layer=2
+transparency=50</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1020</x>
+      <y>90</y>
+      <w>260</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>/Metadata/
+--Possible Values--
+--
++ can_post_performance: Boolean
++ can_delete_performace: Boolean
++ can_cast_performer: Boolean
++ can_search_performances: Boolean
++ can_audition: Boolean
++ is_performer: Boolean
+
+bg=white
+layer=2
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>50</x>
+      <y>50</y>
+      <w>930</w>
+      <h>570</h>
+    </coordinates>
+    <panel_attributes>Audition Me - Objects
+--
+bg=orange
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>1000</x>
+      <y>50</y>
+      <w>300</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>Structs
+--
+bg=orange
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>750</x>
+      <y>370</y>
+      <w>210</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>Permission holds a single 
+metadata value as an object.
+e.g. 
+{
+	can_post_performace: true
+}
+bg=blue
+layer=2
+transparency=50</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>840</x>
+      <y>330</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>70</x>
+      <y>400</y>
+      <w>270</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>A generic user. Each user of the service 
+inherits from this. If the user is not a 
+permormer. The system will nullify the
+`participating_in` attribute. The sytem will
+also inject the security group metadata.
+bg=blue
+layer=2
+transparency=50</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>180</x>
+      <y>360</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>540</x>
+      <y>190</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>420</x>
+      <y>370</y>
+      <w>270</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>_Performance_
+--
++ id: String
++ title: String
++ director: String
++ casting_director: String
++ live_performace_dates: Array&lt;Date&gt;
++ cast: Array&lt;String&gt;
++ venue: String
+bg=white
+layer=2
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>330</x>
+      <y>230</y>
+      <w>110</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;10.0;50.0;140.0;90.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>420</x>
+      <y>540</y>
+      <w>270</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>Generic object. All String attributes 
+besides `id`, `title` and `venue` 
+referance a User object.
+bg=blue
+layer=2
+transparency=50</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>530</x>
+      <y>500</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1000</x>
+      <y>270</y>
+      <w>210</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>Lambda Functions
+--
+Login
+Auth
+User -&gt; all actions
+Performance -&gt; all actions</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
