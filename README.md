@@ -2,7 +2,7 @@
 
 Built by Carter J. Cobb
 
-## ⚠️ This Project is under developmet
+## ⚠️ This project is under developmet
 
 Current code will break and is not recommended to be run.
 
@@ -59,7 +59,7 @@ During this lab you will build a cloud hosted application to connect performers 
 
 ## Pre Run ⚠️
 
-Most of the python scripts will require environment variables. Due to the unfinished nature of the project, this stage cannot be accurately listed.
+- Most of the python scripts will require environment variables. Due to the unfinished nature of the project, this stage cannot be accurately listed.
 
 ## Run ⚠️
 
