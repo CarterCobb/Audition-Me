@@ -67,7 +67,7 @@ Most of the python scripts will require environment variables. Due to the unfini
 
 ## Test ⚠️
 
-- Durind developmet, python scripts will have simple tests noted with `# TESTING`
+- During developmet, python scripts will have simple tests noted with `# TESTING`
 
 ## Additional Details
 
