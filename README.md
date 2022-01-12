@@ -38,14 +38,14 @@ During this lab you will build a cloud hosted application to connect performers 
 
 ### Technical Requirements
 
-- Your entire system, except for your user interface (the view) must reside in the AWS cloud.  Any exceptions to this rule must be approved in advance by the instructor.
+- Your entire system, except for your user interface (the view) must reside in the AWS cloud. Any exceptions to this rule must be approved in advance by the instructor.
 - At least some of your functionality must exist in the form of AWS lambda functions [example](https://aws.amazon.com/lambda/).
 - You may, if you choose, also use an EC2 instance to house some of your code, but you MUST remain in the free tier and incur no charges.
 - At least some of your public API functionality must flow through the AWS API Gateway, but you MUST remain in the free tier and incur no charges [example](https://aws.amazon.com/api-gateway/pricing/).
-- At least some of your data storage must you AWS DynamoDB.  However, you must remain in the free tier and incur no charges [example](https://aws.amazon.com/dynamodb/).
+- At least some of your data storage must you AWS DynamoDB. However, you must remain in the free tier and incur no charges [example](https://aws.amazon.com/dynamodb/).
 - Your authentication/authorization must be done using either AWS Cognito User pools or AWS lambda authorizer lambdas.
 - All email notification sending should be done via a single service (lambda).
-- Sending of audition reminder emails should use AWS SQS.  One message should be published for each audition reminder (may include multiple recipients).  A SQS consumer should retrieve the message and send the email.
+- Sending of audition reminder emails should use AWS SQS. One message should be published for each audition reminder (may include multiple recipients). A SQS consumer should retrieve the message and send the email.
 
 ### Requirements To Start
 
@@ -64,6 +64,10 @@ During this lab you will build a cloud hosted application to connect performers 
 ## Run ⚠️
 
 - Under development but the scripts can still be ran and tested
+
+## Deploy
+
+- Use the example file [here](https://github.com/CarterCobb/Audition-Me/blob/93caae3cbd4b882a560dfd7920e5b4c6bac872c4/deploy_to_ecr_example.bat) to deploy the Docker images to AWS ECR to prepare for containerized lambdas. Please note the comments on that Batchfile before running it.
 
 ## Test ⚠️
 
