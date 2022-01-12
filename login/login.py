@@ -1,17 +1,22 @@
 import os
 import boto3
-from jwt import decode
+import base64
+import json
 
-JWT_SECRET = os.environ["SECRET"]
 dynamodb = boto3.resource("dynamodb")
 
 
 def lambda_handler(event, context):
     try:
-        auth_token = event["body"]["Authorization"]
-        payload = decode(auth_token, JWT_SECRET, algorithms=["HS256"])
+        req_body = event["body"]
+        if (event["isBase64Encoded"]):
+            req_body = base64.b64decode(req_body)
+        body_obj = json.loads(req_body)
         table = dynamodb.Table("Users")
-        table.get_item(Key={"id": payload["id"]})
+        table.get_item(Key={"email": body_obj["email"]})
+        # Verify the user exists then:
+        # Need to use bcrypt to verify password then:
+        # return correct response back to caller
     except KeyError:
         return {
             "error": "NO_AUTH_HEADER",
