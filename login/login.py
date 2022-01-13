@@ -31,7 +31,7 @@ def lambda_handler(event, context):
                 if("password" in body_obj and checkpw(str.encode(body_obj["password"]), str.encode(item["password"]))):
                     return {
                         "statusCode": 200,
-                        "accessToken": encode(item, JWT_SECRET, algorithm="HS256"),
+                        "accessToken": encode({"id": item["id"]}, JWT_SECRET, algorithm="HS256"),
                     }
         return {
             "statusCode": 404,
