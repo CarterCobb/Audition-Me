@@ -44,6 +44,6 @@ def lambda_handler(event, context):
 
 
 # TESTING
-data = {"headers": {"Authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwYXNzd29yZCI6IiQyYiQxMiR4NkZRN3pRNEwxRTBhVXI0TncvOTNlUmI2UTdlcDQza2YxUUE3V1JPUEgzYXRpdmhUVHBTVyIsImVtYWlsIjoiY2FydGVyLmNvYmI3MkBnbWFpbC5jb20iLCJpZCI6ImFzZHNhZDNxNDMyNCJ9.N9kMZtnEkJXTIkTKVG8cfOx5csJT6YxgfpfnHn88EJs"}, "isBase64Encoded": False}
+data = {"headers": {"Authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJ9.AFxp8Sd6jJ3LPXdv_RhAxAbPFYyVDgV7x9G5wRDZ-90"}, "isBase64Encoded": False}
 
 print(lambda_handler(data, None))
