@@ -37,10 +37,21 @@ def lambda_handler(event, context):
             if (event["isBase64Encoded"]):
                 req_body = b64decode(req_body)
             req_body = json.loads(req_body)
-            req_body["id"] = uniqueid()
+            id = uniqueid()
+            req_body["id"] = id
             table = dynamodb.Table("performance")
-            res = table.put_item(Item=req_body)
-            return {"statusCode": 201, "response": res}
+            table.put_item(Item=req_body)
+            # Add performance to user list
+            table_user = dynamodb.Table("users")
+            table_user.update_item(
+                Key={"id": user["id"]},
+                UpdateExpression="set performances = list_append(if_not_exists(performances, :empty_list), :performance)",
+                ExpressionAttributeValues={
+                    ':empty_list': [],
+                    ':performance': [id],
+                },
+                ReturnValues="UPDATED_NEW")
+            return {"statusCode": 201}
     elif event["httpMethod"] == "PUT":
         # Audition or cast a perfomer
         if "action_type" in event["queryStringParameters"]:
@@ -75,9 +86,35 @@ def lambda_handler(event, context):
                 "message": "`action_type` query param is required"
             }
     elif event["httpMethod"] == "DELETE":
-        if user["permissions"]["can_delete_performace"]:
-            # Delete perfomance
-            return {"statusCode": 204}
+        if user["permissions"]["can_delete_performance"]:
+            if "id" in event["queryStringParameters"]:
+                id = event["queryStringParameters"]["id"]
+                if id in user["performances"]:
+                    # Delete performance
+                    table = dynamodb.Table("performance")
+                    table.delete_item(Key={"id": id})
+                    # Remove referance to performance on user
+                    table_user = dynamodb.Table("users")
+                    new_performance_list = user["performances"].remove(id)
+                    table_user.update_item(
+                        Key={"id": user["id"]},
+                        UpdateExpression="set performances = :performances",
+                        ExpressionAttributeValues={
+                            ':performances': new_performance_list if new_performance_list != None else [],
+                        }, ReturnValues="UPDATED_NEW")
+                    return {"statusCode": 204}
+                else:
+                    return {
+                        "statusCode": 403,
+                        "error": "UNOWNED_PERFORMANCE_ACTION",
+                        "message": "Unable to perform action on performce becasue you do not own it."
+                    }
+            else:
+                return {
+                    "statusCode": 400,
+                    "error": "NO_ID",
+                    "message": "`id` is a required query parameter"
+                }
     return {
         "error": "ACTION_NOT_FOUND",
         "message": "The requested action cannot be found for the authenticated user.",
@@ -86,6 +123,10 @@ def lambda_handler(event, context):
 
 
 def get_user(token):
+    """
+    Get the full representation of an authenticated user.
+    Also sets the users permissions from their security group.
+    """
     table = dynamodb.Table("users")
     payload = decode(token, JWT_SECRET, algorithms=["HS256"])
     user = table.get_item(Key={"id": payload["id"]})
@@ -99,6 +140,9 @@ def get_user(token):
 
 
 def get_security_group(user):
+    """
+    Find the security group for the user.
+    """
     table = dynamodb.Table("security_group")
     group = table.get_item(Key={"id": user["security_group"]})
     if not "Item" in group:
@@ -107,9 +151,12 @@ def get_security_group(user):
 
 
 def get_permissions(ids):
+    """
+    Get the permission metadata for each given id
+    """
     permissions = {
         "can_post_performance": False,
-        "can_delete_performace": False,
+        "can_delete_performance": False,
         "can_cast_performer": False,
         "can_search_performances": False,
         "can_audition": False,
@@ -138,9 +185,10 @@ director_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTFiZTFhNTYzN
 
 data = {"headers": {
     "Authorization": director_token},
-    "httpMethod": "POST",
+    "httpMethod": "DELETE",
     "queryStringParameters": {
-    "action_type": "cast"
+    "action_type": "cast",
+    "id": "Mx/ULXF2tPst7D07iLvlog=="
 },
     "body": "ewogICAgInRpdGxlIjogImZpcnN0IHBlcmZvcm1hbmNlIiwKICAgICJkaXJlY3RvciI6ICI2MWUxYmUxYTU2Mzc3ZTg4YjVhYWM4YTkiLAogICAgImNhc3RpbmdfZGlyZWN0b3IiOiAiNjFlMWJlMWE1NjM3N2U4OGI1YWFjOGE5IiwKICAgICJsaXZlX3BlcmZvcm1hbmNlX2RhdGVzIjogWyIyMDIyLTAxLTE0IDExOjM2OjUxLjc4OTI1MyIsICIyMDIyLTAxLTE0IDExOjM3OjAzLjkyODk0NyJdLAogICAgImNhc3QiOiBbIjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJdLAogICAgImF1ZGl0aW9ucyI6IFsiNjFlMDY5NzQ3YzhmMTE5ODZmODBmZWExIl0sCiAgICAidmVudWUiOiAiMTIzIE1pZG8gTm93aGVyZSBMYW5lIgp9",
     "isBase64Encoded": True
