@@ -1,11 +1,13 @@
 from ast import NotIn
 import json
 import os
+from time import perf_counter
 import boto3
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from json import loads, dumps
 from bcrypt import checkpw
 from jwt import decode
+import datetime
 
 # JWT_SECRET = os.environ["SECRET"]
 JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
@@ -19,6 +21,7 @@ def lambda_handler(event, context):
     lambda for each action.
     """
     user = get_user(event["headers"]["Authorization"])
+    print(user)
     if event["httpMethod"] == "GET":
         # Search for performance
         if user["permissions"]["can_search_performances"]:
@@ -30,7 +33,14 @@ def lambda_handler(event, context):
     elif event["httpMethod"] == "POST":
         if user["permissions"]["can_post_performance"]:
             # Create performace from body
-            return {"statusCode": 201}
+            req_body = event["body"]
+            if (event["isBase64Encoded"]):
+                req_body = b64decode(req_body)
+            req_body = json.loads(req_body)
+            req_body["id"] = uniqueid()
+            table = dynamodb.Table("performance")
+            res = table.put_item(Item=req_body)
+            return {"statusCode": 201, "response": res}
     elif event["httpMethod"] == "PUT":
         # Audition or cast a perfomer
         if "action_type" in event["queryStringParameters"]:
@@ -114,8 +124,37 @@ def get_permissions(ids):
     return permissions
 
 
+def uniqueid():
+    """
+    Generate a new if for the performance
+    """
+    return b64encode(os.urandom(16)).decode('ascii')
+
+
 # TESTING
-data = {"headers":
-        {"Authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJ9.AFxp8Sd6jJ3LPXdv_RhAxAbPFYyVDgV7x9G5wRDZ-90"},
-        "httpMethod": "GET"}
+
+performer_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJ9.AFxp8Sd6jJ3LPXdv_RhAxAbPFYyVDgV7x9G5wRDZ-90"
+director_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTFiZTFhNTYzNzdlODhiNWFhYzhhOSJ9.vaiQSCAwBNedjYPTny1TAMX5fTvUVtF7E5ck8Y6sBhk"
+
+data = {"headers": {
+    "Authorization": director_token},
+    "httpMethod": "POST",
+    "queryStringParameters": {
+    "action_type": "cast"
+},
+    "body": "ewogICAgInRpdGxlIjogImZpcnN0IHBlcmZvcm1hbmNlIiwKICAgICJkaXJlY3RvciI6ICI2MWUxYmUxYTU2Mzc3ZTg4YjVhYWM4YTkiLAogICAgImNhc3RpbmdfZGlyZWN0b3IiOiAiNjFlMWJlMWE1NjM3N2U4OGI1YWFjOGE5IiwKICAgICJsaXZlX3BlcmZvcm1hbmNlX2RhdGVzIjogWyIyMDIyLTAxLTE0IDExOjM2OjUxLjc4OTI1MyIsICIyMDIyLTAxLTE0IDExOjM3OjAzLjkyODk0NyJdLAogICAgImNhc3QiOiBbIjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJdLAogICAgImF1ZGl0aW9ucyI6IFsiNjFlMDY5NzQ3YzhmMTE5ODZmODBmZWExIl0sCiAgICAidmVudWUiOiAiMTIzIE1pZG8gTm93aGVyZSBMYW5lIgp9",
+    "isBase64Encoded": True
+}
+
+{
+    "title": "first performance",
+    "director": "61e1be1a56377e88b5aac8a9",
+    "casting_director": "61e1be1a56377e88b5aac8a9",
+    "live_performance_dates": ["2022-01-14 11:36:51.789253", "2022-01-14 11:37:03.928947"],
+    "cast": ["61e069747c8f11986f80fea1"],
+    "auditions": ["61e069747c8f11986f80fea1"],
+    "venue": "123 Mido Nowhere Lane"
+}
+# d = datetime.datetime.fromisoformat("2022-01-14 11:37:03.928947")
+
 print(lambda_handler(data, None))
