@@ -224,15 +224,16 @@ data = {"headers": {
     "Authorization": director_token},
     "httpMethod": "PUT",
     "queryStringParameters": {
-    "action_type": "cast",
-    "id": "Mx/ULXF2tPst7D07iLvlog==",
-    "performer": "61e069747c8f11986f80fea1",
-    "performance": "1upRkUdg9qBWezwHLOynHA=="
+        "action_type": "cast",
+        "id": "Mx/ULXF2tPst7D07iLvlog==",
+        "performer": "61e069747c8f11986f80fea1",
+        "performance": "1upRkUdg9qBWezwHLOynHA=="
 },
     "body": "ewogICAgInRpdGxlIjogImZpcnN0IHBlcmZvcm1hbmNlIiwKICAgICJkaXJlY3RvciI6ICI2MWUxYmUxYTU2Mzc3ZTg4YjVhYWM4YTkiLAogICAgImNhc3RpbmdfZGlyZWN0b3IiOiAiNjFlMWJlMWE1NjM3N2U4OGI1YWFjOGE5IiwKICAgICJsaXZlX3BlcmZvcm1hbmNlX2RhdGVzIjogWyIyMDIyLTAxLTE0IDExOjM2OjUxLjc4OTI1MyIsICIyMDIyLTAxLTE0IDExOjM3OjAzLjkyODk0NyJdLAogICAgImNhc3QiOiBbIjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJdLAogICAgImF1ZGl0aW9ucyI6IFsiNjFlMDY5NzQ3YzhmMTE5ODZmODBmZWExIl0sCiAgICAidmVudWUiOiAiMTIzIE1pZG8gTm93aGVyZSBMYW5lIgp9",
     "isBase64Encoded": True
 }
 
+# Example performance before its Base64 encoded
 {
     "title": "first performance",
     "director": "61e1be1a56377e88b5aac8a9",
