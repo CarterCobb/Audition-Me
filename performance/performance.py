@@ -1,13 +1,9 @@
-from ast import NotIn
 import json
 import os
-from time import perf_counter
 import boto3
 from base64 import b64decode, b64encode
-from json import loads, dumps
-from bcrypt import checkpw
+from json import loads
 from jwt import decode
-import datetime
 
 # JWT_SECRET = os.environ["SECRET"]
 JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
@@ -36,7 +32,7 @@ def lambda_handler(event, context):
             req_body = event["body"]
             if (event["isBase64Encoded"]):
                 req_body = b64decode(req_body)
-            req_body = json.loads(req_body)
+            req_body = loads(req_body)
             id = uniqueid()
             req_body["id"] = id
             table = dynamodb.Table("performance")
