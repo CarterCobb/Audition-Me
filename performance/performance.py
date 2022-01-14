@@ -64,6 +64,8 @@ def lambda_handler(event, context):
                         ":performance": [id],
                     },
                     ReturnValues="UPDATED_NEW")
+                    # // TODO: Send email to performer that they were casted for this performance &
+                    # // TODO: Schedule email for the performer for 7pm the evening before each performace time
                 return {"statusCode": 201}
         elif event["httpMethod"] == "PUT":
             # Audition or cast a perfomer
@@ -83,6 +85,7 @@ def lambda_handler(event, context):
                                 },
                                 ReturnValues="UPDATED_NEW"
                             )
+                            # // TODO: Send email to director that performer auditioned fro their performance
                             return {"statusCode": 204}
                         else:
                             return {
