@@ -63,10 +63,46 @@ def lambda_handler(event, context):
                         }
                 elif event["queryStringParameters"]["action_type"] == "cast":
                     if user["permissions"]["can_cast_performer"]:
+                        if "performer" in event["queryStringParameters"]:
+                            # Safe to get performer id
+                            performer = event["queryStringParameters"]["performer"]
+                            if "performance" in event["queryStringParameters"]:
+                                # Safe to get performance id
+                                perfomance = event["queryStringParameters"]["performance"]
+                                if perfomance in user["performances"]:
+                                    # Add perfromer id to casted_performers list on then performance
+                                    table = dynamodb.Table("performance")
+                                    table.update_item(
+                                        Key={"id": perfomance},
+                                        UpdateExpression="set casted_performers = list_append(if_not_exists(casted_performers, :empty_list), :performer)",
+                                        ExpressionAttributeValues={
+                                            ':empty_list': [],
+                                            ':performer': [performer],
+                                        },
+                                        ReturnValues="UPDATED_NEW"
+                                    )
+                                    return {"statusCode": 204}
+                                else:
+                                    return {
+                                        "statusCode": 403,
+                                        "error": "UNOWNED_PERFORMANCE_ACTION",
+                                        "message": "Unable to perform action on performance becasue you do not own it."
+                                    }
+                            else:
+                                return {
+                                    "statusCode": 400,
+                                    "error": "UNKNOWN_PERFORMANCE",
+                                    "message": "`performance` is a required query string parameter"
+                                }
+                        else:
+                            return {
+                                "statusCode": 400,
+                                "error": "UNKNOWN_PERFORMER",
+                                "message": "`performer` is a required query string parameter"
+                            }
                         # cast performer to this performance
                         # Director only
                         #  (add user id to the `cast` list)
-                        return {"statusCode": 204}
                 else:
                     return {
                         "statusCode": 404,
@@ -114,11 +150,12 @@ def lambda_handler(event, context):
             "error": "ACTION_NOT_FOUND",
             "message": "The requested action cannot be found for the authenticated user."
         }
-    except:
+    except Exception as e:
         return {
             "statusCode": 500,
             "error": "UNKNOWN_ERROR",
-            "message": "An unknown error occured"
+            "message": "An unknown error occured",
+            "exception": e
         }
 
 
@@ -185,10 +222,12 @@ director_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTFiZTFhNTYzN
 
 data = {"headers": {
     "Authorization": director_token},
-    "httpMethod": "DELETE",
+    "httpMethod": "PUT",
     "queryStringParameters": {
     "action_type": "cast",
-    "id": "Mx/ULXF2tPst7D07iLvlog=="
+    "id": "Mx/ULXF2tPst7D07iLvlog==",
+    "performer": "61e069747c8f11986f80fea1",
+    "performance": "1upRkUdg9qBWezwHLOynHA=="
 },
     "body": "ewogICAgInRpdGxlIjogImZpcnN0IHBlcmZvcm1hbmNlIiwKICAgICJkaXJlY3RvciI6ICI2MWUxYmUxYTU2Mzc3ZTg4YjVhYWM4YTkiLAogICAgImNhc3RpbmdfZGlyZWN0b3IiOiAiNjFlMWJlMWE1NjM3N2U4OGI1YWFjOGE5IiwKICAgICJsaXZlX3BlcmZvcm1hbmNlX2RhdGVzIjogWyIyMDIyLTAxLTE0IDExOjM2OjUxLjc4OTI1MyIsICIyMDIyLTAxLTE0IDExOjM3OjAzLjkyODk0NyJdLAogICAgImNhc3QiOiBbIjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJdLAogICAgImF1ZGl0aW9ucyI6IFsiNjFlMDY5NzQ3YzhmMTE5ODZmODBmZWExIl0sCiAgICAidmVudWUiOiAiMTIzIE1pZG8gTm93aGVyZSBMYW5lIgp9",
     "isBase64Encoded": True
