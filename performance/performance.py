@@ -16,106 +16,110 @@ def lambda_handler(event, context):
     Uses http methods to determine what actions to take vs creating a new
     lambda for each action.
     """
-    user = get_user(event["headers"]["Authorization"])
-    print(user)
-    if event["httpMethod"] == "GET":
-        # Search for performance
-        if user["permissions"]["can_search_performances"]:
-            # Search
-            return {
-                "statusCode": 200,
-                "performances": []
-            }
-    elif event["httpMethod"] == "POST":
-        if user["permissions"]["can_post_performance"]:
-            # Create performace from body
-            req_body = event["body"]
-            if (event["isBase64Encoded"]):
-                req_body = b64decode(req_body)
-            req_body = loads(req_body)
-            id = uniqueid()
-            req_body["id"] = id
-            table = dynamodb.Table("performance")
-            table.put_item(Item=req_body)
-            # Add performance to user list
-            table_user = dynamodb.Table("users")
-            table_user.update_item(
-                Key={"id": user["id"]},
-                UpdateExpression="set performances = list_append(if_not_exists(performances, :empty_list), :performance)",
-                ExpressionAttributeValues={
-                    ':empty_list': [],
-                    ':performance': [id],
-                },
-                ReturnValues="UPDATED_NEW")
-            return {"statusCode": 201}
-    elif event["httpMethod"] == "PUT":
-        # Audition or cast a perfomer
-        if "action_type" in event["queryStringParameters"]:
-            if event["queryStringParameters"]["action_type"] == "audition":
-                if user["permissions"]["can_audition"]:
-                    # Sign performer up to the perfomance
-                    # Perfomrer only
-                    #  (add user id to the `auditions` list)
-                    return {
-                        "statusCode": 200,
-                        "message": "auditioned"
-                    }
-            elif event["queryStringParameters"]["action_type"] == "cast":
-                if user["permissions"]["can_cast_performer"]:
-                    # cast performer to this performance
-                    # Director only
-                    #  (add user id to the `cast` list)
-                    return {
-                        "statusCode": 200,
-                        "message": "casted"
-                    }
-            else:
+    try:
+        user = get_user(event["headers"]["Authorization"])
+        print(user)
+        if event["httpMethod"] == "GET":
+            # Search for performance
+            if user["permissions"]["can_search_performances"]:
+                # Search
                 return {
-                    "statusCode": 404,
-                    "error": "UNKNOW_ACTION_TYPE",
-                    "message": "the `action_type` provided is invalid"
+                    "statusCode": 200,
+                    "performances": []
                 }
-        else:
-            return {
-                "statusCode": 400,
-                "error": "NO_ACTION_TYPE",
-                "message": "`action_type` query param is required"
-            }
-    elif event["httpMethod"] == "DELETE":
-        if user["permissions"]["can_delete_performance"]:
-            if "id" in event["queryStringParameters"]:
-                id = event["queryStringParameters"]["id"]
-                if id in user["performances"]:
-                    # Delete performance
-                    table = dynamodb.Table("performance")
-                    table.delete_item(Key={"id": id})
-                    # Remove referance to performance on user
-                    table_user = dynamodb.Table("users")
-                    new_performance_list = user["performances"].remove(id)
-                    table_user.update_item(
-                        Key={"id": user["id"]},
-                        UpdateExpression="set performances = :performances",
-                        ExpressionAttributeValues={
-                            ':performances': new_performance_list if new_performance_list != None else [],
-                        }, ReturnValues="UPDATED_NEW")
-                    return {"statusCode": 204}
+        elif event["httpMethod"] == "POST":
+            if user["permissions"]["can_post_performance"]:
+                # Create performace from body
+                req_body = event["body"]
+                if (event["isBase64Encoded"]):
+                    req_body = b64decode(req_body)
+                req_body = loads(req_body)
+                id = uniqueid()
+                req_body["id"] = id
+                table = dynamodb.Table("performance")
+                table.put_item(Item=req_body)
+                # Add performance to user list
+                table_user = dynamodb.Table("users")
+                table_user.update_item(
+                    Key={"id": user["id"]},
+                    UpdateExpression="set performances = list_append(if_not_exists(performances, :empty_list), :performance)",
+                    ExpressionAttributeValues={
+                        ':empty_list': [],
+                        ':performance': [id],
+                    },
+                    ReturnValues="UPDATED_NEW")
+                return {"statusCode": 201}
+        elif event["httpMethod"] == "PUT":
+            # Audition or cast a perfomer
+            if "action_type" in event["queryStringParameters"]:
+                if event["queryStringParameters"]["action_type"] == "audition":
+                    if user["permissions"]["can_audition"]:
+                        # Sign performer up to the perfomance
+                        # Perfomrer only
+                        #  (add user id to the `auditions` list)
+                        return {
+                            "statusCode": 200,
+                            "message": "auditioned"
+                        }
+                elif event["queryStringParameters"]["action_type"] == "cast":
+                    if user["permissions"]["can_cast_performer"]:
+                        # cast performer to this performance
+                        # Director only
+                        #  (add user id to the `cast` list)
+                        return {"statusCode": 204}
                 else:
                     return {
-                        "statusCode": 403,
-                        "error": "UNOWNED_PERFORMANCE_ACTION",
-                        "message": "Unable to perform action on performce becasue you do not own it."
+                        "statusCode": 404,
+                        "error": "UNKNOW_ACTION_TYPE",
+                        "message": "the `action_type` provided is invalid"
                     }
             else:
                 return {
                     "statusCode": 400,
-                    "error": "NO_ID",
-                    "message": "`id` is a required query parameter"
+                    "error": "NO_ACTION_TYPE",
+                    "message": "`action_type` query param is required"
                 }
-    return {
-        "error": "ACTION_NOT_FOUND",
-        "message": "The requested action cannot be found for the authenticated user.",
-        "code": 404
-    }
+        elif event["httpMethod"] == "DELETE":
+            if user["permissions"]["can_delete_performance"]:
+                if "id" in event["queryStringParameters"]:
+                    id = event["queryStringParameters"]["id"]
+                    if id in user["performances"]:
+                        # Delete performance
+                        table = dynamodb.Table("performance")
+                        table.delete_item(Key={"id": id})
+                        # Remove referance to performance on user
+                        table_user = dynamodb.Table("users")
+                        new_performance_list = user["performances"].remove(id)
+                        table_user.update_item(
+                            Key={"id": user["id"]},
+                            UpdateExpression="set performances = :performances",
+                            ExpressionAttributeValues={
+                                ':performances': new_performance_list if new_performance_list != None else [],
+                            }, ReturnValues="UPDATED_NEW")
+                        return {"statusCode": 204}
+                    else:
+                        return {
+                            "statusCode": 403,
+                            "error": "UNOWNED_PERFORMANCE_ACTION",
+                            "message": "Unable to perform action on performance becasue you do not own it."
+                        }
+                else:
+                    return {
+                        "statusCode": 400,
+                        "error": "NO_ID",
+                        "message": "`id` is a required query parameter"
+                    }
+        return {
+            "statusCode": 404,
+            "error": "ACTION_NOT_FOUND",
+            "message": "The requested action cannot be found for the authenticated user."
+        }
+    except:
+        return {
+            "statusCode": 500,
+            "error": "UNKNOWN_ERROR",
+            "message": "An unknown error occured"
+        }
 
 
 def get_user(token):
