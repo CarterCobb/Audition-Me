@@ -47,7 +47,7 @@ def lambda_handler(event, context):
 
 
 # TESTING
-data = {"body": dumps({"email": "carter.cobb72@gmail.com",
+data = {"body": dumps({"email": "test@test.com",
                       "password": "12345"}), "isBase64Encoded": False}
 
 print(lambda_handler(data, None))
