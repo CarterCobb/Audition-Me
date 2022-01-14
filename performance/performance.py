@@ -25,14 +25,14 @@ def lambda_handler(event, context):
                 filter = None
                 if "filter" in event["queryStringParameters"]:
                     filter = event["queryStringParameters"]["filter"]
-                # Get all perfromances
+                # Get all performances
                 table = dynamodb.Table("performance")
                 response = table.scan()
-                result = response['Items']
-                while 'LastEvaluatedKey' in response:
+                result = response["Items"]
+                while "LastEvaluatedKey" in response:
                     response = table.scan(
-                        ExclusiveStartKey=response['LastEvaluatedKey'])
-                    result.extend(response['Items'])
+                        ExclusiveStartKey=response["LastEvaluatedKey"])
+                    result.extend(response["Items"])
                 # Apply filter if any; its an optional query string param
                 filtered_result = []
                 if filter != None:
@@ -60,8 +60,8 @@ def lambda_handler(event, context):
                     Key={"id": user["id"]},
                     UpdateExpression="set performances = list_append(if_not_exists(performances, :empty_list), :performance)",
                     ExpressionAttributeValues={
-                        ':empty_list': [],
-                        ':performance': [id],
+                        ":empty_list": [],
+                        ":performance": [id],
                     },
                     ReturnValues="UPDATED_NEW")
                 return {"statusCode": 201}
@@ -70,13 +70,26 @@ def lambda_handler(event, context):
             if "action_type" in event["queryStringParameters"]:
                 if event["queryStringParameters"]["action_type"] == "audition":
                     if user["permissions"]["can_audition"]:
-                        # Sign performer up to the perfomance
-                        # Perfomrer only
-                        #  (add user id to the `auditions` list)
-                        return {
-                            "statusCode": 200,
-                            "message": "auditioned"
-                        }
+                        if "performance" in event["queryStringParameters"]:
+                            # Add user id to the auditions list on the performance
+                            table = dynamodb.Table("performance")
+                            table.update_item(
+                                Key={
+                                    "id": event["queryStringParameters"]["performance"]},
+                                UpdateExpression="set auditions = list_append(if_not_exists(auditions, :empty_list), :user)",
+                                ExpressionAttributeValues={
+                                    ":empty_list": [],
+                                    ":user": [user["id"]],
+                                },
+                                ReturnValues="UPDATED_NEW"
+                            )
+                            return {"statusCode": 204}
+                        else:
+                            return {
+                                "statusCode": 400,
+                                "error": "MISSING_PERFOMANCE",
+                                "message": "`performance` is a requried query parameter"
+                            }
                 elif event["queryStringParameters"]["action_type"] == "cast":
                     if user["permissions"]["can_cast_performer"]:
                         if "performer" in event["queryStringParameters"]:
@@ -92,8 +105,8 @@ def lambda_handler(event, context):
                                         Key={"id": perfomance},
                                         UpdateExpression="set casted_performers = list_append(if_not_exists(casted_performers, :empty_list), :performer)",
                                         ExpressionAttributeValues={
-                                            ':empty_list': [],
-                                            ':performer': [performer],
+                                            ":empty_list": [],
+                                            ":performer": [performer],
                                         },
                                         ReturnValues="UPDATED_NEW"
                                     )
@@ -143,7 +156,7 @@ def lambda_handler(event, context):
                             Key={"id": user["id"]},
                             UpdateExpression="set performances = :performances",
                             ExpressionAttributeValues={
-                                ':performances': new_performance_list if new_performance_list != None else [],
+                                ":performances": new_performance_list if new_performance_list != None else [],
                             }, ReturnValues="UPDATED_NEW")
                         return {"statusCode": 204}
                     else:
@@ -225,7 +238,7 @@ def uniqueid():
     """
     Generate a new if for the performance
     """
-    return b64encode(os.urandom(16)).decode('ascii')
+    return b64encode(os.urandom(16)).decode("ascii")
 
 
 # TESTING
@@ -235,9 +248,9 @@ director_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTFiZTFhNTYzN
 
 data = {"headers": {
     "Authorization": performer_token},
-    "httpMethod": "GET",
+    "httpMethod": "PUT",
     "queryStringParameters": {
-        "action_type": "cast",
+        "action_type": "audition", # cast
         "id": "Mx/ULXF2tPst7D07iLvlog==",
         "performer": "61e069747c8f11986f80fea1",
         "performance": "1upRkUdg9qBWezwHLOynHA==",
