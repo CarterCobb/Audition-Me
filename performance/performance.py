@@ -2,7 +2,7 @@ import json
 import os
 import boto3
 from base64 import b64decode, b64encode
-from json import loads
+from json import loads, dumps
 from jwt import decode
 
 # JWT_SECRET = os.environ["SECRET"]
@@ -18,14 +18,30 @@ def lambda_handler(event, context):
     """
     try:
         user = get_user(event["headers"]["Authorization"])
-        print(user)
         if event["httpMethod"] == "GET":
             # Search for performance
             if user["permissions"]["can_search_performances"]:
                 # Search
+                filter = None
+                if "filter" in event["queryStringParameters"]:
+                    filter = event["queryStringParameters"]["filter"]
+                # Get all perfromances
+                table = dynamodb.Table("performance")
+                response = table.scan()
+                result = response['Items']
+                while 'LastEvaluatedKey' in response:
+                    response = table.scan(
+                        ExclusiveStartKey=response['LastEvaluatedKey'])
+                    result.extend(response['Items'])
+                # Apply filter if any; its an optional query string param
+                filtered_result = []
+                if filter != None:
+                    for performance in result:
+                        if filter in dumps(performance):
+                            filtered_result.append(performance)
                 return {
                     "statusCode": 200,
-                    "performances": []
+                    "performances": result if filter == None else filtered_result
                 }
         elif event["httpMethod"] == "POST":
             if user["permissions"]["can_post_performance"]:
@@ -100,9 +116,6 @@ def lambda_handler(event, context):
                                 "error": "UNKNOWN_PERFORMER",
                                 "message": "`performer` is a required query string parameter"
                             }
-                        # cast performer to this performance
-                        # Director only
-                        #  (add user id to the `cast` list)
                 else:
                     return {
                         "statusCode": 404,
@@ -221,13 +234,14 @@ performer_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTA2OTc0N2M4
 director_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTFiZTFhNTYzNzdlODhiNWFhYzhhOSJ9.vaiQSCAwBNedjYPTny1TAMX5fTvUVtF7E5ck8Y6sBhk"
 
 data = {"headers": {
-    "Authorization": director_token},
-    "httpMethod": "PUT",
+    "Authorization": performer_token},
+    "httpMethod": "GET",
     "queryStringParameters": {
         "action_type": "cast",
         "id": "Mx/ULXF2tPst7D07iLvlog==",
         "performer": "61e069747c8f11986f80fea1",
-        "performance": "1upRkUdg9qBWezwHLOynHA=="
+        "performance": "1upRkUdg9qBWezwHLOynHA==",
+        "filter": "I love pie"
 },
     "body": "ewogICAgInRpdGxlIjogImZpcnN0IHBlcmZvcm1hbmNlIiwKICAgICJkaXJlY3RvciI6ICI2MWUxYmUxYTU2Mzc3ZTg4YjVhYWM4YTkiLAogICAgImNhc3RpbmdfZGlyZWN0b3IiOiAiNjFlMWJlMWE1NjM3N2U4OGI1YWFjOGE5IiwKICAgICJsaXZlX3BlcmZvcm1hbmNlX2RhdGVzIjogWyIyMDIyLTAxLTE0IDExOjM2OjUxLjc4OTI1MyIsICIyMDIyLTAxLTE0IDExOjM3OjAzLjkyODk0NyJdLAogICAgImNhc3QiOiBbIjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJdLAogICAgImF1ZGl0aW9ucyI6IFsiNjFlMDY5NzQ3YzhmMTE5ODZmODBmZWExIl0sCiAgICAidmVudWUiOiAiMTIzIE1pZG8gTm93aGVyZSBMYW5lIgp9",
     "isBase64Encoded": True
