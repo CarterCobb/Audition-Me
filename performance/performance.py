@@ -97,16 +97,27 @@ def lambda_handler(event, context):
                             performer = event["queryStringParameters"]["performer"]
                             if "performance" in event["queryStringParameters"]:
                                 # Safe to get performance id
-                                perfomance = event["queryStringParameters"]["performance"]
-                                if perfomance in user["performances"]:
+                                performance = event["queryStringParameters"]["performance"]
+                                if performance in user["performances"]:
                                     # Add perfromer id to casted_performers list on then performance
                                     table = dynamodb.Table("performance")
                                     table.update_item(
-                                        Key={"id": perfomance},
+                                        Key={"id": performance},
                                         UpdateExpression="set casted_performers = list_append(if_not_exists(casted_performers, :empty_list), :performer)",
                                         ExpressionAttributeValues={
                                             ":empty_list": [],
                                             ":performer": [performer],
+                                        },
+                                        ReturnValues="UPDATED_NEW"
+                                    )
+                                    # Add the performance to the performers `participating_in` list
+                                    table_user = dynamodb.Table("users")
+                                    table_user.update_item(
+                                        Key={"id": performer},
+                                        UpdateExpression="set participating_in = list_append(if_not_exists(participating_in, :empty_list), :performance)",
+                                        ExpressionAttributeValues={
+                                            ":empty_list": [],
+                                            ":performance": [performance],
                                         },
                                         ReturnValues="UPDATED_NEW"
                                     )
@@ -247,10 +258,10 @@ performer_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTA2OTc0N2M4
 director_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTFiZTFhNTYzNzdlODhiNWFhYzhhOSJ9.vaiQSCAwBNedjYPTny1TAMX5fTvUVtF7E5ck8Y6sBhk"
 
 data = {"headers": {
-    "Authorization": performer_token},
+    "Authorization": director_token},
     "httpMethod": "PUT",
     "queryStringParameters": {
-        "action_type": "audition", # cast
+        "action_type": "cast",  # cast | audition
         "id": "Mx/ULXF2tPst7D07iLvlog==",
         "performer": "61e069747c8f11986f80fea1",
         "performance": "1upRkUdg9qBWezwHLOynHA==",
