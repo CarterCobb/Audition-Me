@@ -261,8 +261,8 @@ performer_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTA2OTc0N2M4
 director_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTFiZTFhNTYzNzdlODhiNWFhYzhhOSJ9.vaiQSCAwBNedjYPTny1TAMX5fTvUVtF7E5ck8Y6sBhk"
 
 data = {"headers": {
-    "Authorization": director_token},
-    "httpMethod": "PUT",
+    "Authorization": performer_token},
+    "httpMethod": "GET",
     "queryStringParameters": {
         "action_type": "cast",  # cast | audition
         "id": "Mx/ULXF2tPst7D07iLvlog==",
