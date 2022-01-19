@@ -15,7 +15,7 @@
 + name: String
 + email: String
 + phone: string
-+ security_groups: Array&lt;String&gt; 
++ security_group: String
 + performances: Array&lt;String&gt;
 + participating_in: Array&lt;String&gt;
 
@@ -303,13 +303,12 @@ transparency=50</panel_attributes>
       <x>1000</x>
       <y>270</y>
       <w>210</w>
-      <h>90</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>Lambda Functions
 --
 Login
 Auth
-User -&gt; all actions
 Performance -&gt; all actions</panel_attributes>
     <additional_attributes/>
   </element>
