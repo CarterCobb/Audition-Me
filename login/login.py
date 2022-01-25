@@ -28,7 +28,7 @@ def lambda_handler(event, context):
             result.extend(response['Items'])
         for item in result:
             if "email" in body_obj and (body_obj["email"] == item["email"]):
-                if("password" in body_obj and checkpw(str.encode(body_obj["password"]), str.encode(item["password"]))):
+                if("password" in body_obj and checkpw(body_obj["password"].encode("utf-8"), item["password"].encode("utf-8"))):
                     return {
                         "statusCode": 200,
                         "accessToken": encode({"id": item["id"]}, JWT_SECRET, algorithm="HS256"),
@@ -38,16 +38,17 @@ def lambda_handler(event, context):
             "error": "USER_NOT_FOUND",
             "message": "Failed to login"
         }
-    except:
+    except Exception as e:
         return {
-            "ststusCode": 500,
+            "statusCode": 500,
             "error": "UNKNOWN_ERROR",
-            "message": "An unknown error occoured"
+            "message": "An unknown error occoured",
+            "error_details": str(e)
         }
 
 
 # TESTING
-data = {"body": dumps({"email": "test@test.com",
-                      "password": "12345"}), "isBase64Encoded": False}
+# data = {"body": dumps({"email": "carter.cobb72@gmail.com",
+#                       "password": "12345"}), "isBase64Encoded": False}
 
-print(lambda_handler(data, None))
+# print(lambda_handler(data, None))

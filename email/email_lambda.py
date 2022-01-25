@@ -45,21 +45,21 @@ def lambda_handler(event, context):
         return {
             "statusCode": 500,
             "error": "SERVER_ERROR",
-            "message": e
+            "message": str(e)
         }
 
 
 # TESTING
 
-data = {
-    "body": "ewogICAgInRvIjogInRlc3RAdGVzdC5jb20iLAogICAgInN1YmplY3QiOiAidGVzdCIsCiAgICAibWVzc2FnZSI6ICJ0ZXN0IG1lc3NhZ2UgOikiCn0=",
-    "isBase64Encoded": True
-}
+# data = {
+#     "body": "ewogICAgInRvIjogInRlc3RAdGVzdC5jb20iLAogICAgInN1YmplY3QiOiAidGVzdCIsCiAgICAibWVzc2FnZSI6ICJ0ZXN0IG1lc3NhZ2UgOikiCn0=",
+#     "isBase64Encoded": True
+# }
 
-{
-    "to": "test@test.com",
-    "subject": "test",
-    "message": "test message :)"
-}
+# {
+#     "to": "test@test.com",
+#     "subject": "test",
+#     "message": "test message :)"
+# }
 
-print(lambda_handler(data, None))
+# print(lambda_handler(data, None))
