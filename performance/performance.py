@@ -5,8 +5,8 @@ from base64 import b64decode, b64encode
 from json import loads, dumps
 from jwt import decode
 
-# JWT_SECRET = os.environ["SECRET"]
-JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
+JWT_SECRET = os.environ["SECRET"]
+# JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
 dynamodb = boto3.resource("dynamodb")
 
 
@@ -195,7 +195,7 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "error": "UNKNOWN_ERROR",
             "message": "An unknown error occured",
-            "exception": e
+            "exception": str(e)
         }
 
 
@@ -276,7 +276,7 @@ data = {"headers": {
 
 # Example performance before its Base64 encoded
 {
-    "title": "first performance",
+    "title": "another performance",
     "director": "61e1be1a56377e88b5aac8a9",
     "casting_director": "61e1be1a56377e88b5aac8a9",
     "live_performance_dates": ["2022-01-14 11:36:51.789253", "2022-01-14 11:37:03.928947"],
@@ -286,4 +286,4 @@ data = {"headers": {
 }
 # d = datetime.datetime.fromisoformat("2022-01-14 11:37:03.928947")
 
-print(lambda_handler(data, None))
+# print(lambda_handler(data, None))
