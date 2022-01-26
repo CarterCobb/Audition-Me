@@ -47,9 +47,8 @@ def lambda_handler(event, context):
             if user["permissions"]["can_post_performance"]:
                 # Create performace from body
                 req_body = event["body"]
-                if (event["isBase64Encoded"]):
-                    req_body = b64decode(req_body)
-                req_body = loads(req_body)
+                if ("isBase64Encoded" in event and event["isBase64Encoded"]):
+                    req_body = loads(b64decode(req_body))
                 id = uniqueid()
                 req_body["id"] = id
                 table = dynamodb.Table("performance")
@@ -252,7 +251,7 @@ def uniqueid():
     """
     Generate a new if for the performance
     """
-    return b64encode(os.urandom(16)).decode("ascii")
+    return b64encode(os.urandom(16)).decode("ascii").replace("=", "")
 
 
 # TESTING
