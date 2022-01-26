@@ -5,6 +5,8 @@ from base64 import b64decode, b64encode
 from json import loads, dumps
 from jwt import decode
 from requests import post
+import random
+import string
 
 JWT_SECRET = os.environ["SECRET"]
 # JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
@@ -101,7 +103,7 @@ def lambda_handler(event, context):
                             except:
                                 print("Exception occurred", exc_info=True)
                             finally:
-                                return {"statusCode": 204}
+                                return {"statusCode": 204, "email_sent_to": director_full["Item"]["email"]}
                         else:
                             return {
                                 "statusCode": 400,
@@ -152,7 +154,7 @@ def lambda_handler(event, context):
                                         print("Exception occurred",
                                               exc_info=True)
                                     finally:
-                                        return {"statusCode": 204}
+                                        return {"statusCode": 204, "email_sent_to": email}
                                 else:
                                     return {
                                         "statusCode": 403,
@@ -280,7 +282,7 @@ def uniqueid():
     """
     Generate a new if for the performance
     """
-    return b64encode(os.urandom(16)).decode("ascii").replace("=", "")
+    return ''.join(random.choice(string.ascii_letters) for i in range(22))
 
 
 def send_email(to, subject, message, auth):
@@ -312,15 +314,15 @@ data = {"headers": {
 }
 
 # Example performance before its Base64 encoded
-{
-    "title": "another performance",
-    "director": "61e1be1a56377e88b5aac8a9",
-    "casting_director": "61e1be1a56377e88b5aac8a9",
-    "live_performance_dates": ["2022-01-14 11:36:51.789253", "2022-01-14 11:37:03.928947"],
-    "cast": ["61e069747c8f11986f80fea1"],
-    "auditions": ["61e069747c8f11986f80fea1"],
-    "venue": "123 Mido Nowhere Lane"
-}
+# {
+#     "title": "another performance",
+#     "director": "61e1be1a56377e88b5aac8a9",
+#     "casting_director": "61e1be1a56377e88b5aac8a9",
+#     "live_performance_dates": ["2022-01-14 11:36:51.789253", "2022-01-14 11:37:03.928947"],
+#     "cast": ["61e069747c8f11986f80fea1"],
+#     "auditions": ["61e069747c8f11986f80fea1"],
+#     "venue": "123 Mido Nowhere Lane"
+# }
 # d = datetime.datetime.fromisoformat("2022-01-14 11:37:03.928947")
 
-print(lambda_handler(data, None))
+# print(lambda_handler(data, None))
