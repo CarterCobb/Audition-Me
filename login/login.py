@@ -5,8 +5,8 @@ from json import loads, dumps
 from bcrypt import checkpw
 from jwt import encode
 
-JWT_SECRET = os.environ["SECRET"]
-# JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
+# JWT_SECRET = os.environ["SECRET"]
+JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
 dynamodb = boto3.resource("dynamodb")
 
 
@@ -15,10 +15,9 @@ def lambda_handler(event, context):
     Takes in the email and apssword from the body and if its valid will return an access token.
     """
     try:
-        req_body = event["body"]
+        body_obj = event["body"]
         if ("isBase64Encoded" in event and event["isBase64Encoded"]):
-            req_body = b64decode(req_body)
-        body_obj = loads(req_body)
+            body_obj = loads(b64decode(body_obj))
         table = dynamodb.Table("users")
         response = table.scan()
         result = response['Items']
@@ -48,7 +47,7 @@ def lambda_handler(event, context):
 
 
 # TESTING
-# data = {"body": dumps({"email": "test@test.com",
-#                       "password": "12345"}), "isBase64Encoded": False}
+# data = {"body": {"email": "carter.cobb72@gmail.com",
+#                       "password": "12345", "isBase64Encoded": False}}
 
 # print(lambda_handler(data, None))
