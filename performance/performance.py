@@ -4,6 +4,7 @@ import boto3
 from base64 import b64decode, b64encode
 from json import loads, dumps
 from jwt import decode
+from requests import post
 
 JWT_SECRET = os.environ["SECRET"]
 # JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
@@ -17,7 +18,8 @@ def lambda_handler(event, context):
     lambda for each action.
     """
     try:
-        user = get_user(event["headers"]["Authorization"])
+        AUTH_TOKEN = event["headers"]["Authorization"]
+        user = get_user(AUTH_TOKEN)
         if event["httpMethod"] == "GET":
             # Search for performance
             if user["permissions"]["can_search_performances"]:
@@ -63,8 +65,6 @@ def lambda_handler(event, context):
                         ":performance": [id],
                     },
                     ReturnValues="UPDATED_NEW")
-                    # // TODO: Send email to performer that they were casted for this performance &
-                    # // TODO: Schedule email for the performer for 7pm the evening before each performace time
                 return {"statusCode": 201}
         elif event["httpMethod"] == "PUT":
             # Audition or cast a perfomer
@@ -84,8 +84,24 @@ def lambda_handler(event, context):
                                 },
                                 ReturnValues="UPDATED_NEW"
                             )
-                            # // TODO: Send email to director that performer auditioned fro their performance
-                            return {"statusCode": 204}
+                            try:
+                                p = table.get_item(
+                                    Key={"id": event["queryStringParameters"]["performance"]})
+                                if ("Item" in p):
+                                    director = p["Item"]["casting_director"]
+                                    if(director):
+                                        _performer = user["id"]
+                                        _performance = event["queryStringParameters"]["performance"]
+                                        user_table = dynamodb.Table("users")
+                                        director_full = user_table.get_item(
+                                            Key={"id": director})
+                                        if("Item" in director_full):
+                                            send_email(
+                                                director_full["Item"]["email"], "New Audition", f"Performer id: {_performer} has auditioned for performance id: {_performance}", AUTH_TOKEN)
+                            except:
+                                print("Exception occurred", exc_info=True)
+                            finally:
+                                return {"statusCode": 204}
                         else:
                             return {
                                 "statusCode": 400,
@@ -93,6 +109,7 @@ def lambda_handler(event, context):
                                 "message": "`performance` is a requried query parameter"
                             }
                 elif event["queryStringParameters"]["action_type"] == "cast":
+                    # // TODO: Schedule email for the performer for 7pm the evening before each performace time
                     if user["permissions"]["can_cast_performer"]:
                         if "performer" in event["queryStringParameters"]:
                             # Safe to get performer id
@@ -123,7 +140,19 @@ def lambda_handler(event, context):
                                         },
                                         ReturnValues="UPDATED_NEW"
                                     )
-                                    return {"statusCode": 204}
+                                    try:
+                                        p = table_user.get_item(
+                                            Key={"id": performer})
+                                        if ("Item" in p):
+                                            email = p["Item"]["email"]
+                                            if(email):
+                                                send_email(
+                                                    email, "New Audition", f"You have been cast for perfromance id: {performance}! Congradulations!!!", AUTH_TOKEN)
+                                    except:
+                                        print("Exception occurred",
+                                              exc_info=True)
+                                    finally:
+                                        return {"statusCode": 204}
                                 else:
                                     return {
                                         "statusCode": 403,
@@ -254,19 +283,28 @@ def uniqueid():
     return b64encode(os.urandom(16)).decode("ascii").replace("=", "")
 
 
+def send_email(to, subject, message, auth):
+    URL = "https://wlzehlqpta.execute-api.us-west-1.amazonaws.com/beta/email"
+    BODY = {"to": to, "subject": subject, "message": message}
+    HEADERS = {
+        "Content-Type": "application/json",
+        "Authorization": auth}
+    post(url=URL, data=dumps(BODY), headers=HEADERS)
+
+
 # TESTING
 
 performer_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJ9.AFxp8Sd6jJ3LPXdv_RhAxAbPFYyVDgV7x9G5wRDZ-90"
 director_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYxZTFiZTFhNTYzNzdlODhiNWFhYzhhOSJ9.vaiQSCAwBNedjYPTny1TAMX5fTvUVtF7E5ck8Y6sBhk"
 
 data = {"headers": {
-    "Authorization": performer_token},
-    "httpMethod": "GET",
+    "Authorization": director_token},
+    "httpMethod": "PUT",
     "queryStringParameters": {
         "action_type": "cast",  # cast | audition
         "id": "Mx/ULXF2tPst7D07iLvlog==",
         "performer": "61e069747c8f11986f80fea1",
-        "performance": "1upRkUdg9qBWezwHLOynHA==",
+        "performance": "KHBsdf234fsdkhg234",
         "filter": "I love pie"
 },
     "body": "ewogICAgInRpdGxlIjogImZpcnN0IHBlcmZvcm1hbmNlIiwKICAgICJkaXJlY3RvciI6ICI2MWUxYmUxYTU2Mzc3ZTg4YjVhYWM4YTkiLAogICAgImNhc3RpbmdfZGlyZWN0b3IiOiAiNjFlMWJlMWE1NjM3N2U4OGI1YWFjOGE5IiwKICAgICJsaXZlX3BlcmZvcm1hbmNlX2RhdGVzIjogWyIyMDIyLTAxLTE0IDExOjM2OjUxLjc4OTI1MyIsICIyMDIyLTAxLTE0IDExOjM3OjAzLjkyODk0NyJdLAogICAgImNhc3QiOiBbIjYxZTA2OTc0N2M4ZjExOTg2ZjgwZmVhMSJdLAogICAgImF1ZGl0aW9ucyI6IFsiNjFlMDY5NzQ3YzhmMTE5ODZmODBmZWExIl0sCiAgICAidmVudWUiOiAiMTIzIE1pZG8gTm93aGVyZSBMYW5lIgp9",
@@ -285,4 +323,4 @@ data = {"headers": {
 }
 # d = datetime.datetime.fromisoformat("2022-01-14 11:37:03.928947")
 
-# print(lambda_handler(data, None))
+print(lambda_handler(data, None))
