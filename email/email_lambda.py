@@ -3,18 +3,20 @@ import boto3
 from base64 import b64decode
 from json import loads
 
-SENDER = "Audition Me API <test@test.com>"
+SENDER = "Audition Me API <carter.cobb72@gmail.com>"
 AWS_REGION = "us-west-1"
 CHARSET = "UTF-8"
 ses = boto3.client("ses")
 
 
 def lambda_handler(event, context):
+    """
+    All `to` emails must be verifyed in SES to work. Otherwise you will get an error when sending an email to an unverified email.
+    """
     try:
         req_body = event["body"]
-        if (event["isBase64Encoded"]):
-            req_body = b64decode(req_body)
-        req_body = loads(req_body)
+        if ("isBase64Encoded" in event and event["isBase64Encoded"]):
+            req_body = loads(b64decode(req_body))
         if "to" in req_body and 'message' in req_body and "subject" in req_body:
             ses.send_email(
                 Destination={
@@ -57,9 +59,9 @@ def lambda_handler(event, context):
 # }
 
 # {
-#     "to": "test@test.com",
-#     "subject": "test",
-#     "message": "test message :)"
+    # "to": "test@test.com",
+    # "subject": "test",
+    # "message": "test message :)"
 # }
 
 # print(lambda_handler(data, None))
