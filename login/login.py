@@ -5,8 +5,8 @@ from json import loads, dumps
 from bcrypt import checkpw
 from jwt import encode
 
-# JWT_SECRET = os.environ["SECRET"]
-JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
+JWT_SECRET = os.environ["SECRET"]
+# JWT_SECRET = "rtINZYEEUWkHJ8gmCDyQyfqDZVAROUttk99e9MIpHDc97KbUeduDngegXMhj5BAG6dKlSmr9k5uGaiQh"
 dynamodb = boto3.resource("dynamodb")
 
 
