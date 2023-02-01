@@ -2,9 +2,9 @@
 
 Built by Carter J. Cobb
 
-## ⚠️ This project is under developmet
+## ⚠️ This project is dependant on pre existing AWS resources
 
-Current code will break and is not recommended to be run.
+Current code will break and is not recommended to be run UNLESS YOU KNOW WHAT TO DO IN AWS
 
 ## Details
 
