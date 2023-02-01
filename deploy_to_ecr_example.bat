@@ -29,8 +29,8 @@ call docker build -t <IMAGE NAME>:<VERSION> -f Dockerfile
 call cd ..
 echo .
 
-echo Building user image . . .
-call cd user
+echo Building email image . . .
+call cd email
 call docker build -t <IMAGE NAME>:<VERSION> -f Dockerfile
 call cd ..
 echo .
